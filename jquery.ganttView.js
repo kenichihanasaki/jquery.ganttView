@@ -64,6 +64,7 @@ var ChartLang = {
             Chart.addGrid(slideDiv, months);
             Chart.addBlockContainers(slideDiv);
             Chart.addBlocks(slideDiv);
+            Chart.setBlockContainersWidth(slideDiv);
 
             div.append(slideDiv);
             container.append(div);
@@ -269,14 +270,28 @@ var ChartLang = {
 
             for (var i = 0; i < data.length; i++) {
                 for (var j = 0; j < data[i].series.length; j++) {
-                    blocksDiv.append(jQuery("<div>", {
+                    containerDiv = jQuery("<div>", {
                                 "class": "ganttview-block-container ganttview-block-container-" + data[i].id,
                                 "id": "ganttview-block-container-" + data[i].series[j].id
-                    }));
+                    });
+                    containerDiv.css("height", opts.cellHeight - 3 + "px");
+                    blocksDiv.append(containerDiv);
                 }
             }
 
             div.append(blocksDiv);
+        },
+
+        setBlockContainersWidth: function(div) {
+            var opts = Chart.opts;
+            var data = opts.data;
+
+            for (var i = 0; i < data.length; i++) {
+                for (var j = 0; j < data[i].series.length; j++) {
+                    var gridDiv = jQuery("div#ganttview-grid-row-" + data[i].series[j].id, div);
+                    jQuery("div.ganttview-block-container", div).css("width", gridDiv.css("width"));
+                }
+            }
         },
 
         addBlocks: function (div) {
@@ -494,6 +509,11 @@ var ChartLang = {
                     containment: 'parent',
                     grid: [cellWidth, 0],
                     handles: 'e',
+                    resize: function(event, ui) {
+                        $(this).css("position", "");
+                        $(this).css("top", "");
+                        $(this).css("left", "0px");
+                    },
                     stop: function(event, ui) {
                         var rdistance = Math.ceil(ui.size.width / cellWidth);
                         //console.debug('width: %o, originalSize: %o, day: %o', ui.size.width, ui.originalSize.width, rdistance);
@@ -560,6 +580,8 @@ var ChartLang = {
                 "class": "ganttview-block-container ganttview-block-container-" + d.id,
                 "id": "ganttview-block-container-" + s.id
             });
+            newRow.css("height", Chart.opts.cellHeight - 3 + "px");
+            newRow.css("width", w + "px");
 
             var newVTHeader = jQuery("<div>", {
                 "class": "ganttview-vtheader-series-name ganttview-vtheader-series-name-" + d.id,
